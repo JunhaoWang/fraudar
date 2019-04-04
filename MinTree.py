@@ -11,7 +11,7 @@ class MinTree:
         self.nodes = [float('inf')] * self.n
         for i in range(len(degrees)):
             self.nodes[self.numBranches + i] = degrees[i]
-        for i in reversed(range(self.numBranches)):
+        for i in reversed(list(range(self.numBranches))):
             self.nodes[i] = min(self.nodes[2 * i + 1], self.nodes[2 * i + 2])
 
     # @profile
@@ -34,10 +34,10 @@ class MinTree:
             self.nodes[cur] = nextParent
 
     def dump(self):
-        print "numLeaves: %d, numBranches: %d, n: %d, nodes: " % (self.numLeaves, self.numBranches, self.n)
+        print("numLeaves: %d, numBranches: %d, n: %d, nodes: " % (self.numLeaves, self.numBranches, self.n))
         cur = 0
         for i in range(self.height + 1):
             for j in range(2 ** i):
-                print self.nodes[cur],
+                print(self.nodes[cur], end=' ')
                 cur += 1
-            print ''
+            print('')

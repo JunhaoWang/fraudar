@@ -1,15 +1,16 @@
-# contains functions that run the greedy detector for dense regions in a sparse matrix. 
-# use aveDegree or sqrtWeightedAveDegree or logWeightedAveDegree on a sparse matrix, 
+# contains functions that run the greedy detector for dense regions in a sparse matrix.
+# use aveDegree or sqrtWeightedAveDegree or logWeightedAveDegree on a sparse matrix,
 # which returns ((rowSet, colSet), score) for the most suspicious block.
 
-from __future__ import division
+
 import time
 import math
 import numpy as np
 import random
 from scipy import sparse
 from MinTree import MinTree
-np.set_printoptions(threshold='nan')
+import sys
+np.set_printoptions(threshold=sys.maxsize)
 np.set_printoptions(linewidth=160)
 
 # given 2 lists corresponding to the edge source and destination, this returns the sparse matrix representation of the data
@@ -21,7 +22,7 @@ def listToSparseMatrix(edgesSource, edgesDest):
     M1 = M > 0
     return M1.astype('int')
 
-# reads matrix from file and returns sparse matrix. first 2 columns should be row and column indices of ones. 
+# reads matrix from file and returns sparse matrix. first 2 columns should be row and column indices of ones.
 # @profile
 def readData(filename):
     # dat = np.genfromtxt(filename, delimiter='\t', dtype=int)
@@ -33,7 +34,7 @@ def readData(filename):
             edgesSource.append(int(toks[0]))
             edgesDest.append(int(toks[1]))
     return listToSparseMatrix(edgesSource, edgesDest)
-    
+
 
 def detectMultiple(M, detectFunc, numToDetect):
     Mcur = M.copy().tolil()
@@ -44,7 +45,7 @@ def detectMultiple(M, detectFunc, numToDetect):
         (rs, cs) = Mcur.nonzero()
         for i in range(len(rs)):
             if rs[i] in rowSet and cs[i] in colSet:
-                Mcur[rs[i], cs[i]] = 0 
+                Mcur[rs[i], cs[i]] = 0
     return res
 
 # inject a clique of size m0 by n0, with density pp. the last parameter testIdx determines the camouflage type.
@@ -54,13 +55,13 @@ def detectMultiple(M, detectFunc, numToDetect):
 def injectCliqueCamo(M, m0, n0, p, testIdx):
     (m,n) = M.shape
     M2 = M.copy().tolil()
-    
+
     colSum = np.squeeze(M2.sum(axis = 0).A)
     colSumPart = colSum[n0:n]
     colSumPartPro = np.int_(colSumPart)
     colIdx = np.arange(n0, n, 1)
     population = np.repeat(colIdx, colSumPartPro, axis = 0)
-    
+
     for i in range(m0):
         # inject clique
         for j in range(n0):
@@ -77,11 +78,11 @@ def injectCliqueCamo(M, m0, n0, p, testIdx):
             for j in range(n0, n):
                 if random.random() < thres:
                     M2[i,j] = 1
-        # biased camo           
+        # biased camo
         if testIdx == 3:
             colRplmt = random.sample(population, int(n0 * p))
             M2[i,colRplmt] = 1
-                    
+
     return M2.tocsc()
 
 # sum of weighted edges in rowSet and colSet, plus node suspiciousness values, in matrix M
@@ -187,7 +188,7 @@ def fastGreedyDecreasing(M, colWeights, nodeSusp=None):
 
     while rowSet and colSet:
         if (len(colSet) + len(rowSet)) % 100000 == 0:
-            print("current set size = %d" % (len(colSet) + len(rowSet),))
+            print(("current set size = %d" % (len(colSet) + len(rowSet),)))
         (nextRow, rowDelt) = rowTree.getMin()
         (nextCol, colDelt) = colTree.getMin()
         if rowDelt <= colDelt:
@@ -218,7 +219,7 @@ def fastGreedyDecreasing(M, colWeights, nodeSusp=None):
     finalRowSet = set(range(m))
     finalColSet = set(range(n))
     for i in range(bestNumDeleted):
-        if deleted[i][0] == 0: 
+        if deleted[i][0] == 0:
             finalRowSet.remove(deleted[i][1])
         else:
             finalColSet.remove(deleted[i][1])
