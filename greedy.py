@@ -2,7 +2,6 @@
 # use aveDegree or sqrtWeightedAveDegree or logWeightedAveDegree on a sparse matrix,
 # which returns ((rowSet, colSet), score) for the most suspicious block.
 
-
 import time
 import math
 import numpy as np
@@ -25,15 +24,9 @@ def listToSparseMatrix(edgesSource, edgesDest):
 # reads matrix from file and returns sparse matrix. first 2 columns should be row and column indices of ones.
 # @profile
 def readData(filename):
-    # dat = np.genfromtxt(filename, delimiter='\t', dtype=int)
-    edgesSource = []
-    edgesDest = []
-    with open(filename) as f:
-        for line in f:
-            toks = line.split()
-            edgesSource.append(int(toks[0]))
-            edgesDest.append(int(toks[1]))
-    return listToSparseMatrix(edgesSource, edgesDest)
+    adj_mat = np.load(filename)
+
+    return sparse.coo_matrix(adj_mat)
 
 
 def detectMultiple(M, detectFunc, numToDetect):
@@ -224,4 +217,3 @@ def fastGreedyDecreasing(M, colWeights, nodeSusp=None):
         else:
             finalColSet.remove(deleted[i][1])
     return ((finalRowSet, finalColSet), bestAveScore)
-
